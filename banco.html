@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BancoApp</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: system-ui, sans-serif;
+    font-size: 14px;
+    background: #f5f5f5;
+    color: #111;
+  }
+
+  .app { max-width: 860px; margin: 0 auto; padding: 24px 16px; }
+
+  /* Header */
+  .header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+  .header-icon { width: 38px; height: 38px; background: #1a56db; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  .header-icon svg { color: white; }
+  .header h1 { font-size: 16px; font-weight: 600; }
+  .header p  { font-size: 12px; color: #666; }
+
+  /* Tabs */
+  .tabs { display: flex; border-bottom: 1px solid #ddd; margin-bottom: 24px; }
+  .tab  { padding: 9px 16px; background: none; border: none; cursor: pointer; font-size: 13px; color: #666; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tab.active { color: #111; font-weight: 600; border-bottom-color: #111; }
+
+  /* Cards de métricas */
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .metric  { background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 14px; }
+  .metric-label { font-size: 11px; color: #888; margin-bottom: 4px; }
+  .metric-value { font-size: 20px; font-weight: 600; }
+
+  /* Listas */
+  .list { border: 1px solid #e5e5e5; border-radius: 8px; overflow: hidden; background: #fff; }
+  .list-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f0f0f0; }
+  .list-item:last-child { border-bottom: none; }
+  .list-empty { padding: 32px; text-align: center; color: #999; }
+
+  /* Avatar */
+  .avatar { width: 34px; height: 34px; border-radius: 50%; background: #dbeafe; color: #1d4ed8; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+
+  /* Badges de tipo */
+  .badge { font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 500; }
+  .badge-green  { background: #dcfce7; color: #166534; }
+  .badge-red    { background: #fee2e2; color: #991b1b; }
+  .badge-blue   { background: #dbeafe; color: #1e40af; }
+
+  /* Valores coloridos */
+  .val-green { color: #16a34a; font-weight: 600; }
+  .val-red   { color: #dc2626; font-weight: 600; }
+
+  /* Seção de label + info */
+  .item-info { display: flex; align-items: center; gap: 10px; }
+  .item-title { font-size: 13px; font-weight: 500; }
+  .item-sub   { font-size: 11px; color: #888; }
+  .item-right { text-align: right; }
+
+  /* Formulário de transação */
+  .form-card { background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+  .form-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 12px; }
+  .form-group label { display: block; font-size: 11px; color: #666; margin-bottom: 4px; }
+  .form-group input,
+  .form-group select { width: 100%; padding: 7px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; background: #fff; }
+  .form-group input:focus,
+  .form-group select:focus { outline: none; border-color: #1a56db; }
+
+  /* Barra ações contas */
+  .row-between { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .row-between span { font-size: 13px; color: #666; }
+
+  /* Botões */
+  button { cursor: pointer; border-radius: 6px; font-size: 13px; }
+  .btn        { padding: 8px 16px; border: 1px solid #ddd; background: #fff; color: #111; }
+  .btn:hover  { background: #f5f5f5; }
+  .btn-primary       { padding: 8px 16px; border: none; background: #1a56db; color: #fff; }
+  .btn-primary:hover { background: #1648c0; }
+  .btn-sm            { padding: 4px 10px; border: 1px solid #ddd; background: #fff; font-size: 11px; }
+  .btn-sm:hover      { background: #f5f5f5; }
+  .btn-danger        { padding: 4px 10px; border: 1px solid #fca5a5; background: #fff; color: #dc2626; font-size: 11px; }
+  .btn-danger:hover  { background: #fee2e2; }
+  .btn-row { display: flex; gap: 8px; margin-top: 16px; }
+  .btn-row button { flex: 1; padding: 9px; }
+
+  /* Testes */
+  .test-header { background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+  .test-header p { font-size: 13px; color: #555; margin: 6px 0 14px; }
+  .test-summary { display: flex; gap: 10px; margin-bottom: 14px; }
+  .test-pill   { padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 500; }
+  .test-dot    { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+  .dot-pass    { background: #dcfce7; color: #166534; }
+  .dot-fail    { background: #fee2e2; color: #991b1b; }
+  .pill-pass   { background: #dcfce7; color: #166534; }
+  .pill-fail   { background: #fee2e2; color: #991b1b; }
+  .pill-total  { background: #f3f4f6; color: #374151; }
+
+  /* Modal */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .modal   { background: #fff; border-radius: 10px; padding: 24px; width: 100%; max-width: 400px; }
+  .modal h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+
+  /* Toast */
+  .toast { position: fixed; top: 20px; right: 20px; z-index: 200; padding: 10px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; }
+  .toast-ok  { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+  .toast-err { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+  @media (max-width: 600px) {
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+// ── Dados iniciais ─────────────────────────────────────────────────────────
+const genId = () => "ID" + Math.random().toString(36).substr(2,6).toUpperCase();
+const fmt   = v  => new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(v);
+const fmtDt = s  => new Date(s).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+
+let state = {
+  accounts: [
+    { id:"ACC001", nome:"João Silva",      tipo:"corrente", saldo:15420.50, agencia:"0001", numero:"12345-6", ativo:true },
+    { id:"ACC002", nome:"Maria Santos",    tipo:"poupança", saldo:8750.00,  agencia:"0001", numero:"67890-1", ativo:true },
+    { id:"ACC003", nome:"Carlos Oliveira", tipo:"salário",  saldo:3200.00,  agencia:"0002", numero:"11223-4", ativo:true },
+  ],
+  transactions: [
+    { id:"TXN001", tipo:"deposito",      valor:5000, origem:null,    destino:"ACC001", descricao:"Depósito inicial",           data:"2025-01-15T10:05:00Z" },
+    { id:"TXN002", tipo:"transferencia", valor:1500, origem:"ACC001",destino:"ACC002", descricao:"Transferência PIX",           data:"2025-03-01T11:00:00Z" },
+    { id:"TXN003", tipo:"saque",         valor:300,  origem:"ACC002",destino:null,     descricao:"Saque caixa eletrônico",     data:"2025-03-05T16:00:00Z" },
+    { id:"TXN004", tipo:"deposito",      valor:2200, origem:null,    destino:"ACC003", descricao:"Salário referente a março",  data:"2025-03-10T09:20:00Z" },
+  ],
+};
+
+let currentTab  = "dashboard";
+let toastTimer  = null;
+let modal       = null; // { type, data }
+let txnTipo     = "deposito";
+let testResults = null;
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+const active   = () => state.accounts.filter(a => a.ativo);
+const accName  = id => state.accounts.find(a => a.id === id)?.nome ?? "—";
+const initials = n  => n.trim().split(" ").slice(0,2).map(w=>w[0]).join("").toUpperCase();
+
+const TIPO_LABEL = { deposito:"Depósito", saque:"Saque", transferencia:"Transferência" };
+const TIPO_BADGE = { deposito:"badge-green", saque:"badge-red", transferencia:"badge-blue" };
+
+function toast(msg, err=false) {
+  const el = document.createElement("div");
+  el.className = "toast " + (err ? "toast-err" : "toast-ok");
+  el.textContent = msg;
+  document.body.appendChild(el);
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.remove(), 2800);
+}
+
+// ── Ações ─────────────────────────────────────────────────────────────────
+function createAccount(data) {
+  state.accounts.push({ ...data, id: genId(), ativo: true, saldo: parseFloat(data.saldo)||0 });
+  render();
+}
+function updateAccount(data) {
+  state.accounts = state.accounts.map(a => a.id === data.id ? { ...a, ...data } : a);
+  render();
+}
+function deleteAccount(id) {
+  state.accounts = state.accounts.filter(a => a.id !== id);
+  render();
+}
+function addTransaction(data) {
+  const val = parseFloat(data.valor);
+  const txn = { ...data, id: genId(), data: new Date().toISOString(), valor: val };
+  state.accounts = state.accounts.map(a => {
+    if (txn.tipo === "deposito"      && a.id === txn.destino) return { ...a, saldo: a.saldo + val };
+    if (txn.tipo === "saque"         && a.id === txn.origem)  return { ...a, saldo: a.saldo - val };
+    if (txn.tipo === "transferencia") {
+      if (a.id === txn.origem)  return { ...a, saldo: a.saldo - val };
+      if (a.id === txn.destino) return { ...a, saldo: a.saldo + val };
+    }
+    return a;
+  });
+  state.transactions = [txn, ...state.transactions];
+  render();
+}
+
+// ── Testes ─────────────────────────────────────────────────────────────────
+function runTests() {
+  const r = [];
+  const assert = (name, pass, msg) => r.push({ name, pass, msg: pass ? "passou" : msg });
+  assert("Banco inicializado com contas",      state.accounts.length >= 3,     "Esperado >= 3 contas");
+  assert("Transações inicializadas",           state.transactions.length >= 4,  "Esperado >= 4 transações");
+  assert("Contas ativas existem",              active().length > 0,             "Nenhuma conta ativa");
+  assert("Saldos não negativos",               state.accounts.every(a=>a.saldo>=0), "Conta com saldo negativo");
+  assert("Campos obrigatórios nas contas",     state.accounts.every(a=>a.nome&&a.agencia&&a.numero), "Campos faltando");
+  assert("IDs únicos nas contas",              new Set(state.accounts.map(a=>a.id)).size===state.accounts.length, "IDs duplicados");
+  const valid = ["deposito","saque","transferencia"];
+  assert("Tipos de transação válidos",         state.transactions.every(t=>valid.includes(t.tipo)), "Tipo inválido");
+  assert("Valores positivos",                  state.transactions.every(t=>t.valor>0), "Valor <= 0");
+  assert("IDs únicos nas transações",          new Set(state.transactions.map(t=>t.id)).size===state.transactions.length, "IDs duplicados");
+  assert("Transferências com origem e destino",state.transactions.filter(t=>t.tipo==="transferencia").every(t=>t.origem&&t.destino), "Faltam campos");
+  assert("Depósitos com destino",              state.transactions.filter(t=>t.tipo==="deposito").every(t=>t.destino), "Depósito sem destino");
+  assert("Saques com origem",                  state.transactions.filter(t=>t.tipo==="saque").every(t=>t.origem), "Saque sem origem");
+  return r;
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────
+function render() {
+  document.getElementById("app").innerHTML = buildApp();
+  bindEvents();
+}
+
+function buildApp() {
+  return `
+    ${buildHeader()}
+    ${buildTabs()}
+    ${currentTab === "dashboard"  ? buildDashboard()  : ""}
+    ${currentTab === "contas"     ? buildContas()     : ""}
+    ${currentTab === "transacoes" ? buildTransacoes() : ""}
+    ${currentTab === "testes"     ? buildTestes()     : ""}
+    ${modal ? buildModal() : ""}
+  `;
+}
+
+function buildHeader() {
+  return `
+    <div class="header">
+      <div class="header-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <path d="M9 22V12h6v10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <h1>BancoApp</h1>
+        <p>Sistema Bancário · CRUD + testes de qualidade</p>
+      </div>
+    </div>`;
+}
+
+function buildTabs() {
+  const tabs = [
+    ["dashboard","Dashboard"],["contas","Contas"],
+    ["transacoes","Transações"],["testes","Testes de Qualidade"]
+  ];
+  return `<div class="tabs">${tabs.map(([id,label])=>
+    `<button class="tab${currentTab===id?" active":""}" data-tab="${id}">${label}</button>`
+  ).join("")}</div>`;
+}
+
+function buildDashboard() {
+  const acts = active();
+  const total = acts.reduce((s,a)=>s+a.saldo,0);
+  const last  = state.transactions[0];
+  const metrics = [
+    ["Patrimônio total", fmt(total)],
+    ["Contas ativas", acts.length],
+    ["Transações", state.transactions.length],
+    ["Última operação", last ? fmt(last.valor) : "—"],
+  ];
+  return `
+    <div class="metrics">
+      ${metrics.map(([l,v])=>`
+        <div class="metric">
+          <div class="metric-label">${l}</div>
+          <div class="metric-value">${v}</div>
+        </div>`).join("")}
+    </div>
+    <p style="font-size:13px;color:#666;margin-bottom:10px;font-weight:500">Transações recentes</p>
+    <div class="list">
+      ${state.transactions.slice(0,6).map(t => buildTxnRow(t)).join("") || `<div class="list-empty">Nenhuma transação.</div>`}
+    </div>`;
+}
+
+function buildTxnRow(t) {
+  const color = t.tipo==="deposito" ? "val-green" : t.tipo==="saque" ? "val-red" : "";
+  const sign  = t.tipo==="deposito" ? "+" : t.tipo==="saque" ? "−" : "";
+  const sub   = t.tipo==="transferencia"
+    ? `${accName(t.origem)} → ${accName(t.destino)}`
+    : t.tipo==="deposito" ? `→ ${accName(t.destino)}` : `← ${accName(t.origem)}`;
+  return `
+    <div class="list-item">
+      <div class="item-info">
+        <span class="badge ${TIPO_BADGE[t.tipo]}">${TIPO_LABEL[t.tipo]}</span>
+        <div>
+          <div class="item-title">${t.descricao||"—"}</div>
+          <div class="item-sub">${sub}</div>
+        </div>
+      </div>
+      <div class="item-right">
+        <div class="${color}" style="font-size:13px">${sign}${fmt(t.valor)}</div>
+        <div class="item-sub">${fmtDt(t.data)}</div>
+      </div>
+    </div>`;
+}
+
+function buildContas() {
+  const acts = active();
+  return `
+    <div class="row-between">
+      <span>${acts.length} conta(s) ativa(s)</span>
+      <button class="btn-primary" id="btn-new-acc">+ Nova conta</button>
+    </div>
+    <div class="list">
+      ${acts.length === 0
+        ? `<div class="list-empty">Nenhuma conta. Clique em "Nova conta".</div>`
+        : acts.map(acc=>`
+          <div class="list-item">
+            <div class="item-info">
+              <div class="avatar">${initials(acc.nome)}</div>
+              <div>
+                <div class="item-title">${acc.nome}</div>
+                <div class="item-sub">Ag. ${acc.agencia} · C/C ${acc.numero} · ${acc.tipo}</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px">
+              <span class="${acc.saldo>=0?"val-green":"val-red"}" style="font-size:13px">${fmt(acc.saldo)}</span>
+              <button class="btn-sm" data-edit="${acc.id}">Editar</button>
+              <button class="btn-danger" data-del="${acc.id}">Excluir</button>
+            </div>
+          </div>`).join("")}
+    </div>`;
+}
+
+function buildTransacoes() {
+  const acts = active();
+  const origemField = (txnTipo==="saque"||txnTipo==="transferencia") ? `
+    <div class="form-group">
+      <label>Conta origem</label>
+      <select id="txn-origem">
+        <option value="">Selecione...</option>
+        ${acts.map(a=>`<option value="${a.id}">${a.nome}</option>`).join("")}
+      </select>
+    </div>` : "";
+  const destField = (txnTipo==="deposito"||txnTipo==="transferencia") ? `
+    <div class="form-group">
+      <label>Conta destino</label>
+      <select id="txn-destino">
+        <option value="">Selecione...</option>
+        ${acts.map(a=>`<option value="${a.id}">${a.nome}</option>`).join("")}
+      </select>
+    </div>` : "";
+  return `
+    <div class="form-card">
+      <h3>Nova transação</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="txn-tipo">
+            <option value="deposito" ${txnTipo==="deposito"?"selected":""}>Depósito</option>
+            <option value="saque"    ${txnTipo==="saque"?"selected":""}>Saque</option>
+            <option value="transferencia" ${txnTipo==="transferencia"?"selected":""}>Transferência</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Valor (R$)</label>
+          <input type="number" id="txn-valor" placeholder="0,00" min="0.01" step="0.01" />
+        </div>
+        ${origemField}
+        ${destField}
+        <div class="form-group">
+          <label>Descrição</label>
+          <input type="text" id="txn-desc" placeholder="Opcional" />
+        </div>
+      </div>
+      <button class="btn-primary" id="btn-txn">Confirmar transação</button>
+    </div>
+    <p style="font-size:13px;color:#666;margin-bottom:10px">${state.transactions.length} transação(ões)</p>
+    <div class="list">
+      ${state.transactions.map(t=>buildTxnRow(t)).join("") || `<div class="list-empty">Nenhuma transação.</div>`}
+    </div>`;
+}
+
+function buildTestes() {
+  const summary = testResults ? `
+    <div class="test-summary">
+      <div class="test-pill pill-pass">${testResults.filter(t=>t.pass).length} passaram</div>
+      <div class="test-pill pill-fail">${testResults.filter(t=>!t.pass).length} falharam</div>
+      <div class="test-pill pill-total">${testResults.length} total</div>
+    </div>
+    <div class="list">
+      ${testResults.map((t,i)=>`
+        <div class="list-item">
+          <div class="item-info">
+            <div class="test-dot ${t.pass?"dot-pass":"dot-fail"}">${t.pass?"✓":"✗"}</div>
+            <span style="font-size:13px">${t.name}</span>
+          </div>
+          <span class="badge ${t.pass?"badge-green":"badge-red"}">${t.msg}</span>
+        </div>`).join("")}
+    </div>` : "";
+  return `
+    <div class="test-header">
+      <h3 style="font-size:14px;font-weight:600">Suite de testes de qualidade</h3>
+      <p>12 testes verificam integridade do banco, campos obrigatórios, unicidade de IDs e regras de negócio.</p>
+      <button class="btn-primary" id="btn-run-tests">▶ Executar todos os testes</button>
+    </div>
+    ${summary}`;
+}
+
+function buildModal() {
+  if (modal.type === "create") return `
+    <div class="overlay" id="overlay">
+      <div class="modal">
+        <h2>Nova conta</h2>
+        <div class="form-group" style="margin-bottom:10px"><label>Nome completo</label><input id="m-nome" type="text" /></div>
+        <div class="form-group" style="margin-bottom:10px"><label>Agência</label><input id="m-agencia" type="text" value="0001" /></div>
+        <div class="form-group" style="margin-bottom:10px"><label>Número da conta</label><input id="m-numero" type="text" /></div>
+        <div class="form-group" style="margin-bottom:10px"><label>Saldo inicial (R$)</label><input id="m-saldo" type="number" value="0" /></div>
+        <div class="form-group" style="margin-bottom:10px">
+          <label>Tipo</label>
+          <select id="m-tipo"><option value="corrente">Corrente</option><option value="poupança">Poupança</option><option value="salário">Salário</option></select>
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" id="btn-confirm-create">Criar conta</button>
+          <button class="btn" id="btn-close-modal">Cancelar</button>
+        </div>
+      </div>
+    </div>`;
+
+  if (modal.type === "edit") return `
+    <div class="overlay" id="overlay">
+      <div class="modal">
+        <h2>Editar conta</h2>
+        <div class="form-group" style="margin-bottom:10px"><label>Nome completo</label><input id="m-nome" type="text" value="${modal.data.nome}" /></div>
+        <div class="form-group" style="margin-bottom:10px"><label>Agência</label><input id="m-agencia" type="text" value="${modal.data.agencia}" /></div>
+        <div class="form-group" style="margin-bottom:10px"><label>Número da conta</label><input id="m-numero" type="text" value="${modal.data.numero}" /></div>
+        <div class="form-group" style="margin-bottom:10px">
+          <label>Tipo</label>
+          <select id="m-tipo">
+            <option value="corrente" ${modal.data.tipo==="corrente"?"selected":""}>Corrente</option>
+            <option value="poupança" ${modal.data.tipo==="poupança"?"selected":""}>Poupança</option>
+            <option value="salário"  ${modal.data.tipo==="salário"?"selected":""}>Salário</option>
+          </select>
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" id="btn-confirm-edit">Salvar</button>
+          <button class="btn" id="btn-close-modal">Cancelar</button>
+        </div>
+      </div>
+    </div>`;
+
+  if (modal.type === "delete") return `
+    <div class="overlay" id="overlay">
+      <div class="modal">
+        <h2>Excluir conta?</h2>
+        <p style="font-size:13px;color:#555;margin-bottom:20px">A conta de <strong>${modal.data.nome}</strong> será removida. Esta ação não pode ser desfeita.</p>
+        <div class="btn-row">
+          <button class="btn-danger" style="flex:1;padding:9px;font-size:13px" id="btn-confirm-delete">Excluir</button>
+          <button class="btn" style="flex:1;padding:9px;font-size:13px" id="btn-close-modal">Cancelar</button>
+        </div>
+      </div>
+    </div>`;
+  return "";
+}
+
+// ── Eventos ────────────────────────────────────────────────────────────────
+function bindEvents() {
+  // Tabs
+  document.querySelectorAll(".tab").forEach(btn =>
+    btn.addEventListener("click", () => { currentTab = btn.dataset.tab; render(); })
+  );
+
+  // Modal overlay fechar
+  const overlay = document.getElementById("overlay");
+  if (overlay) overlay.addEventListener("click", e => { if (e.target === overlay) { modal = null; render(); } });
+  const closeBtn = document.getElementById("btn-close-modal");
+  if (closeBtn) closeBtn.addEventListener("click", () => { modal = null; render(); });
+
+  // Nova conta
+  const btnNewAcc = document.getElementById("btn-new-acc");
+  if (btnNewAcc) btnNewAcc.addEventListener("click", () => { modal = { type:"create" }; render(); });
+
+  // Confirmar criação
+  const btnCreate = document.getElementById("btn-confirm-create");
+  if (btnCreate) btnCreate.addEventListener("click", () => {
+    const nome    = document.getElementById("m-nome").value.trim();
+    const numero  = document.getElementById("m-numero").value.trim();
+    const agencia = document.getElementById("m-agencia").value.trim();
+    const tipo    = document.getElementById("m-tipo").value;
+    const saldo   = document.getElementById("m-saldo").value;
+    if (!nome || !numero) { toast("Preencha nome e número", true); return; }
+    createAccount({ nome, numero, agencia, tipo, saldo });
+    modal = null; toast("Conta criada!");
+  });
+
+  // Editar botões
+  document.querySelectorAll("[data-edit]").forEach(btn =>
+    btn.addEventListener("click", () => {
+      const acc = state.accounts.find(a => a.id === btn.dataset.edit);
+      modal = { type:"edit", data: { ...acc } }; render();
+    })
+  );
+
+  // Confirmar edição
+  const btnEdit = document.getElementById("btn-confirm-edit");
+  if (btnEdit) btnEdit.addEventListener("click", () => {
+    const nome    = document.getElementById("m-nome").value.trim();
+    const numero  = document.getElementById("m-numero").value.trim();
+    const agencia = document.getElementById("m-agencia").value.trim();
+    const tipo    = document.getElementById("m-tipo").value;
+    if (!nome || !numero) { toast("Preencha nome e número", true); return; }
+    updateAccount({ ...modal.data, nome, numero, agencia, tipo });
+    modal = null; toast("Conta atualizada!");
+  });
+
+  // Excluir botões
+  document.querySelectorAll("[data-del]").forEach(btn =>
+    btn.addEventListener("click", () => {
+      const acc = state.accounts.find(a => a.id === btn.dataset.del);
+      modal = { type:"delete", data: acc }; render();
+    })
+  );
+
+  // Confirmar exclusão
+  const btnDel = document.getElementById("btn-confirm-delete");
+  if (btnDel) btnDel.addEventListener("click", () => {
+    deleteAccount(modal.data.id); modal = null; toast("Conta removida!");
+  });
+
+  // Tipo de transação
+  const txnTipoEl = document.getElementById("txn-tipo");
+  if (txnTipoEl) txnTipoEl.addEventListener("change", e => { txnTipo = e.target.value; render(); });
+
+  // Confirmar transação
+  const btnTxn = document.getElementById("btn-txn");
+  if (btnTxn) btnTxn.addEventListener("click", () => {
+    const tipo    = document.getElementById("txn-tipo").value;
+    const valor   = parseFloat(document.getElementById("txn-valor").value);
+    const origem  = document.getElementById("txn-origem")?.value  || null;
+    const destino = document.getElementById("txn-destino")?.value || null;
+    const desc    = document.getElementById("txn-desc").value.trim();
+    if (!valor || valor <= 0) { toast("Valor inválido", true); return; }
+    if (tipo !== "deposito"     && !origem)  { toast("Selecione a conta de origem", true); return; }
+    if (tipo !== "saque"        && !destino) { toast("Selecione a conta destino",   true); return; }
+    if (tipo === "transferencia" && origem === destino) { toast("Origem e destino iguais", true); return; }
+    if (tipo !== "deposito") {
+      const src = state.accounts.find(a=>a.id===origem);
+      if (src && src.saldo < valor) { toast("Saldo insuficiente", true); return; }
+    }
+    addTransaction({ tipo, valor, origem, destino, descricao: desc });
+    toast("Transação realizada!");
+  });
+
+  // Testes
+  const btnTests = document.getElementById("btn-run-tests");
+  if (btnTests) btnTests.addEventListener("click", () => {
+    testResults = runTests(); render();
+  });
+}
+
+// Inicia
+render();
+</script>
+</body>
+</html>

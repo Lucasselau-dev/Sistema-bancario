@@ -1,0 +1,135 @@
+# BancoApp
+
+Sistema bancário simples com banco de dados em memória, operações CRUD e testes de qualidade automatizados.
+
+---
+
+## Arquivos
+
+| Arquivo | Descrição |
+|---|---|
+| `banco.html` | Versão standalone — abre direto no navegador |
+| `BankingApp.jsx` | Componente principal React |
+| `reducer.js` | Gerenciamento de estado (CRUD + transações) |
+| `tests.js` | Suite com 12 testes de qualidade |
+| `seed.js` | Dados iniciais (3 contas, 4 transações) |
+| `utils.js` | Funções utilitárias e constantes |
+
+---
+
+## Como rodar
+
+### Opção 1 — HTML puro (mais simples)
+
+Baixe o `banco.html` e abra direto no navegador. Nenhuma instalação necessária.
+
+### Opção 2 — React com Vite
+
+**Requisitos:** Node.js 18+
+
+```bash
+# 1. Criar projeto
+npm create vite@latest banco-app -- --template react
+cd banco-app
+npm install
+
+# 2. Copiar os arquivos para src/
+# BankingApp.jsx, reducer.js, tests.js, seed.js, utils.js
+
+# 3. Substituir src/main.jsx
+cat > src/main.jsx << 'EOF'
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import BankingApp from './BankingApp'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <BankingApp />
+  </React.StrictMode>
+)
+EOF
+
+# 4. Rodar
+npm run dev
+```
+
+Acesse `http://localhost:5173` no navegador.
+
+---
+
+## Funcionalidades
+
+### Dashboard
+- Patrimônio total consolidado de todas as contas ativas
+- Contagem de contas e transações
+- Últimas 6 transações com valor, tipo e data
+
+### Contas (CRUD completo)
+- **Criar** — nome, agência, número, tipo (corrente / poupança / salário) e saldo inicial
+- **Listar** — todas as contas ativas com saldo em destaque
+- **Editar** — atualiza dados cadastrais via modal
+- **Excluir** — remove a conta com confirmação
+
+### Transações
+- **Depósito** — credita valor na conta destino
+- **Saque** — debita valor da conta origem com validação de saldo
+- **Transferência** — debita origem e credita destino; valida saldo e impede origem igual ao destino
+- Histórico completo de todas as operações
+
+### Testes de Qualidade
+12 testes automatizados executados sob demanda:
+
+| # | Teste |
+|---|---|
+| 1 | Banco inicializado com contas |
+| 2 | Transações inicializadas |
+| 3 | Contas ativas existem |
+| 4 | Saldos não negativos |
+| 5 | Campos obrigatórios nas contas |
+| 6 | IDs únicos nas contas |
+| 7 | Tipos de transação válidos |
+| 8 | Valores de transação positivos |
+| 9 | IDs únicos nas transações |
+| 10 | Transferências com origem e destino |
+| 11 | Depósitos com conta destino |
+| 12 | Saques com conta origem |
+
+---
+
+## Estrutura do estado
+
+```js
+{
+  accounts: [
+    {
+      id: "ACC001",
+      nome: "João Silva",
+      tipo: "corrente",       // corrente | poupança | salário
+      saldo: 15420.50,
+      agencia: "0001",
+      numero: "12345-6",
+      ativo: true,
+      createdAt: "2025-01-15T10:00:00Z"
+    }
+  ],
+  transactions: [
+    {
+      id: "TXN001",
+      tipo: "deposito",       // deposito | saque | transferencia
+      valor: 5000,
+      origem: null,           // id da conta ou null
+      destino: "ACC001",      // id da conta ou null
+      descricao: "Depósito inicial",
+      data: "2025-01-15T10:05:00Z"
+    }
+  ]
+}
+```
+
+---
+
+## Tecnologias
+
+- **HTML/CSS/JS puro** (versão standalone)
+- **React 18 + Hooks** (versão JSX)
+- Sem banco de dados externo — estado mantido em memória durante a sessão
